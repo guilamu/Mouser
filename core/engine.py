@@ -356,14 +356,23 @@ class Engine:
         print("[Engine] No HID++ connection — DPI not applied")
         return False
 
-    def set_smart_shift(self, mode):
-        """Send Smart Shift mode change ('ratchet' or 'freespin')."""
-        self.cfg.setdefault("settings", {})["smart_shift_mode"] = mode
+    def set_smart_shift(self, mode, smart_shift_enabled=False, threshold=25):
+        """Send Smart Shift settings to device.
+        mode: 'ratchet' or 'freespin' (fixed mode when smart_shift_enabled=False)
+        smart_shift_enabled: True to enable auto SmartShift
+        threshold: 1-50 sensitivity when SmartShift is enabled"""
+        print(f"[Engine] set_smart_shift({mode}, enabled={smart_shift_enabled}, threshold={threshold}) called")
+        settings = self.cfg.setdefault("settings", {})
+        settings["smart_shift_mode"] = mode
+        settings["smart_shift_enabled"] = smart_shift_enabled
+        settings["smart_shift_threshold"] = threshold
         save_config(self.cfg)
         hg = self.hook._hid_gesture
         if hg:
-            return hg.set_smart_shift(mode)
-        print("[Engine] No HID++ connection — Smart Shift not applied")
+            result = hg.set_smart_shift(mode, smart_shift_enabled, threshold)
+            print(f"[Engine] set_smart_shift -> {'OK' if result else 'FAILED'}")
+            return result
+        print("[Engine] set_smart_shift: No HID++ connection — not applied")
         return False
 
     @property
@@ -403,12 +412,19 @@ class Engine:
                             self._dpi_read_cb(saved_dpi)
                         except Exception:
                             pass
-                saved_ss = self.cfg.get("settings", {}).get("smart_shift_mode")
-                if saved_ss and hg.smart_shift_supported:
-                    hg.set_smart_shift(saved_ss)
+                s = self.cfg.get("settings", {})
+                saved_ss_mode = s.get("smart_shift_mode", "ratchet")
+                saved_ss_enabled = s.get("smart_shift_enabled", False)
+                saved_ss_threshold = s.get("smart_shift_threshold", 25)
+                if hg.smart_shift_supported:
+                    hg.set_smart_shift(saved_ss_mode, saved_ss_enabled, saved_ss_threshold)
                     if self._smart_shift_read_cb:
                         try:
-                            self._smart_shift_read_cb(saved_ss)
+                            self._smart_shift_read_cb({
+                                "mode": saved_ss_mode,
+                                "enabled": saved_ss_enabled,
+                                "threshold": saved_ss_threshold,
+                            })
                         except Exception:
                             pass
         threading.Thread(target=_apply_saved_settings, daemon=True).start()

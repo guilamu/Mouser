@@ -61,7 +61,7 @@ class Backend(QObject):
     _batteryChangeRequest = Signal(int)
     _debugMessageRequest = Signal(str)
     _gestureEventRequest = Signal(object)
-    _smartShiftReadRequest = Signal(str)
+    _smartShiftReadRequest = Signal(object)
 
     def __init__(self, engine=None, parent=None):
         super().__init__(parent)
@@ -202,6 +202,14 @@ class Backend(QObject):
     @Property(str, notify=smartShiftChanged)
     def smartShiftMode(self):
         return self._cfg.get("settings", {}).get("smart_shift_mode", "ratchet")
+
+    @Property(bool, notify=smartShiftChanged)
+    def smartShiftEnabled(self):
+        return bool(self._cfg.get("settings", {}).get("smart_shift_enabled", False))
+
+    @Property(int, notify=smartShiftChanged)
+    def smartShiftThreshold(self):
+        return int(self._cfg.get("settings", {}).get("smart_shift_threshold", 25))
 
     @Property(bool, notify=mouseConnectedChanged)
     def smartShiftSupported(self):
@@ -498,13 +506,35 @@ class Backend(QObject):
             self._engine.set_dpi(dpi)
         self.settingsChanged.emit()
 
-    @Slot(str)
-    def setSmartShift(self, mode):
-        self._cfg.setdefault("settings", {})["smart_shift_mode"] = mode
+    def _applySmartShift(self, mode=None, enabled=None, threshold=None):
+        """Update one or more SmartShift settings, persist config, and push to device."""
+        settings = self._cfg.setdefault("settings", {})
+        if mode is not None:
+            settings["smart_shift_mode"] = mode
+        if enabled is not None:
+            settings["smart_shift_enabled"] = enabled
+        if threshold is not None:
+            settings["smart_shift_threshold"] = threshold
         save_config(self._cfg)
         if self._engine:
-            self._engine.set_smart_shift(mode)
+            self._engine.set_smart_shift(
+                settings.get("smart_shift_mode", "ratchet"),
+                settings.get("smart_shift_enabled", False),
+                settings.get("smart_shift_threshold", 25),
+            )
         self.smartShiftChanged.emit()
+
+    @Slot(str)
+    def setSmartShift(self, mode):
+        self._applySmartShift(mode=mode)
+
+    @Slot(bool)
+    def setSmartShiftEnabled(self, enabled):
+        self._applySmartShift(enabled=enabled)
+
+    @Slot(int)
+    def setSmartShiftThreshold(self, threshold):
+        self._applySmartShift(threshold=threshold)
 
     @Slot(bool)
     def setInvertVScroll(self, value):
@@ -735,14 +765,18 @@ class Backend(QObject):
         """Called from engine/hook thread — posts to Qt main thread."""
         self._gestureEventRequest.emit(event)
 
-    def _onEngineSmartShiftRead(self, mode):
+    def _onEngineSmartShiftRead(self, state):
         """Called from engine thread — posts to Qt main thread."""
-        self._smartShiftReadRequest.emit(mode)
+        self._smartShiftReadRequest.emit(state)
 
-    @Slot(str)
-    def _handleSmartShiftRead(self, mode):
+    @Slot(object)
+    def _handleSmartShiftRead(self, state):
         """Runs on Qt main thread — updates config and notifies QML."""
-        self._cfg.setdefault("settings", {})["smart_shift_mode"] = mode
+        if isinstance(state, dict):
+            settings = self._cfg.setdefault("settings", {})
+            settings["smart_shift_mode"] = state.get("mode", "ratchet")
+            settings["smart_shift_enabled"] = state.get("enabled", False)
+            settings["smart_shift_threshold"] = state.get("threshold", 25)
         self.smartShiftChanged.emit()
 
     @Slot(str)
