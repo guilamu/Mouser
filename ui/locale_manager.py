@@ -115,6 +115,10 @@ _TRANSLATIONS = {
         "scroll.wheel_mode_desc": "Switch between tactile ratchet scrolling and smooth free-spin.",
         "scroll.ratchet": "Ratchet",
         "scroll.freespin": "Free Spin",
+        "scroll.smart_shift": "SmartShift",
+        "scroll.smart_shift_desc": "Automatically switches the scroll wheel from line-by-line scrolling to hyper-fast scrolling when you scroll faster.",
+        "scroll.sensitivity_value": "SENSITIVITY VALUE",
+        "scroll.scroll_mode_section": "SCROLL MODE",
         "scroll.appearance": "Appearance",
         "scroll.appearance_desc": "Choose whether Mouser follows the system, stays light, or stays dark.",
         "scroll.system": "System",
@@ -267,6 +271,10 @@ _TRANSLATIONS = {
         "scroll.wheel_mode_desc": "\u5728\u89e6\u89c9\u68d8\u8f6e\u6eda\u52a8\u548c\u987a\u6ed1\u98de\u8f6e\u6eda\u52a8\u4e4b\u95f4\u5207\u6362\u3002",
         "scroll.ratchet": "\u68d8\u8f6e",
         "scroll.freespin": "\u98de\u8f6e",
+        "scroll.smart_shift": "SmartShift",
+        "scroll.smart_shift_desc": "\u6eda\u8f6e\u6eda\u52a8\u8f83\u5feb\u65f6\uff0c\u81ea\u52a8\u4ece\u9010\u884c\u6eda\u52a8\u5207\u6362\u5230\u9ad8\u901f\u98de\u8f6e\u6a21\u5f0f\u3002",
+        "scroll.sensitivity_value": "\u7075\u654f\u5ea6",
+        "scroll.scroll_mode_section": "\u6eda\u8f6e\u6a21\u5f0f",
         "scroll.appearance": "\u5916\u89c2",
         "scroll.appearance_desc": "\u9009\u62e9 Mouser \u662f\u8ddf\u968f\u7cfb\u7edf\u3001\u4fdd\u6301\u6d45\u8272\u8fd8\u662f\u4fdd\u6301\u6df1\u8272\u3002",
         "scroll.system": "\u7cfb\u7edf",
@@ -414,6 +422,10 @@ _TRANSLATIONS = {
         "scroll.wheel_mode_desc": "\u5728\u89f8\u89ba\u68d8\u8f2a\u6372\u52d5\u548c\u9806\u6ed1\u98db\u8f2a\u6372\u52d5\u4e4b\u9593\u5207\u63db\u3002",
         "scroll.ratchet": "\u68d8\u8f2a",
         "scroll.freespin": "\u98db\u8f2a",
+        "scroll.smart_shift": "SmartShift",
+        "scroll.smart_shift_desc": "\u6372\u8ef8\u6eda\u52d5\u8f03\u5feb\u6642\uff0c\u81ea\u52d5\u5f9e\u9010\u884c\u6372\u52d5\u5207\u63db\u5230\u9ad8\u901f\u98db\u8f2a\u6a21\u5f0f\u3002",
+        "scroll.sensitivity_value": "\u9748\u654f\u5ea6",
+        "scroll.scroll_mode_section": "\u6eda\u8f2a\u6a21\u5f0f",
         "scroll.appearance": "\u5916\u89c0",
         "scroll.appearance_desc": "\u9078\u64c7 Mouser \u662f\u8ddf\u96a8\u7cfb\u7d71\u3001\u4fdd\u6301\u6dfa\u8272\u9084\u662f\u4fdd\u6301\u6df1\u8272\u3002",
         "scroll.system": "\u7cfb\u7d71",
@@ -511,6 +523,7 @@ _CATEGORY_TR: dict[str, dict[str, str]] = {
         "Editing":    "\u7f16\u8f91",
         "Media":      "\u5a92\u4f53",
         "Navigation": "\u5bfc\u822a",
+        "Scroll":     "\u6eda\u8f6e",
         "Custom":     "\u81ea\u5b9a\u4e49",
     },
     "zh_TW": {
@@ -519,6 +532,7 @@ _CATEGORY_TR: dict[str, dict[str, str]] = {
         "Editing":    "\u7de8\u8f2f",
         "Media":      "\u5a92\u9ad4",
         "Navigation": "\u5c0e\u822a",
+        "Scroll":     "\u6eda\u8f2a",
         "Custom":     "\u81ea\u8a02",
     },
 }
@@ -594,6 +608,10 @@ _ACTION_TR: dict[str, dict[str, str]] = {
         "Next Track":           "\u4e0b\u4e00\u9996",
         "Previous Track":       "\u4e0a\u4e00\u9996",
 
+        # ── Scroll ────────────────────────────────────────────────────
+        "Toggle SmartShift":                        "\u5207\u6362 SmartShift \u5f00\u5173",
+        "Switch Scroll Mode (Ratchet / Free Spin)": "\u5207\u6362\u6eda\u8f6e\u6a21\u5f0f\uff08\u68d8\u8f6e / \u98de\u8f6e\uff09",
+
         # ── Custom ────────────────────────────────────────────────────
         "Custom Shortcut\u2026": "\u81ea\u5b9a\u4e49\u5feb\u6377\u952e\u2026",
     },
@@ -663,6 +681,10 @@ _ACTION_TR: dict[str, dict[str, str]] = {
         "Play / Pause":         "\u64ad\u653e/\u66ab\u505c",
         "Next Track":           "\u4e0b\u4e00\u9996",
         "Previous Track":       "\u4e0a\u4e00\u9996",
+
+        # ── Scroll ────────────────────────────────────────────────────
+        "Toggle SmartShift":                        "\u5207\u63db SmartShift \u958b\u95dc",
+        "Switch Scroll Mode (Ratchet / Free Spin)": "\u5207\u63db\u6eda\u8f2a\u6a21\u5f0f\uff08\u68d8\u8f2a / \u98db\u8f2a\uff09",
 
         # ── Custom ────────────────────────────────────────────────────
         "Custom Shortcut\u2026": "\u81ea\u8a02\u5feb\u901f\u9375\u2026",

@@ -274,68 +274,182 @@ Item {
                         top: parent.top
                         margins: 20
                     }
-                    spacing: 12
+                    spacing: 16
 
-                    Text {
-                        text: s["scroll.wheel_mode"]
-                        font {
-                            family: uiState.fontFamily
-                            pixelSize: 16
-                            bold: true
-                        }
-                        color: scrollPage.theme.textPrimary
-                    }
-
-                    Text {
-                        text: s["scroll.wheel_mode_desc"]
-                        font {
-                            family: uiState.fontFamily
-                            pixelSize: 12
-                        }
-                        color: scrollPage.theme.textSecondary
-                    }
-
-                    Row {
+                    // ── SmartShift header row with toggle ───────────────
+                    RowLayout {
                         width: parent.width
-                        spacing: 10
 
-                        Repeater {
-                            model: [
-                                { value: "ratchet",  labelKey: "scroll.ratchet"  },
-                                { value: "freespin", labelKey: "scroll.freespin" }
-                            ]
+                        Column {
+                            spacing: 4
+                            Layout.fillWidth: true
 
-                            delegate: Rectangle {
-                                required property var modelData
-                                width: Math.max(96, ssText.implicitWidth + 28)
-                                height: 38
+                            Text {
+                                text: s["scroll.smart_shift"]
+                                font {
+                                    family: uiState.fontFamily
+                                    pixelSize: 16
+                                    bold: true
+                                }
+                                color: scrollPage.theme.textPrimary
+                            }
+
+                            Text {
+                                text: s["scroll.smart_shift_desc"]
+                                font {
+                                    family: uiState.fontFamily
+                                    pixelSize: 12
+                                }
+                                color: scrollPage.theme.textSecondary
+                                wrapMode: Text.WordWrap
+                                width: parent.width
+                            }
+                        }
+
+                        Switch {
+                            id: smartShiftToggle
+                            checked: backend.smartShiftEnabled
+                            Material.accent: scrollPage.theme.accent
+                            Accessible.name: "SmartShift"
+                            onToggled: backend.setSmartShiftEnabled(checked)
+                        }
+                    }
+
+                    // ── Sensitivity slider (visible when SmartShift ON) ─
+                    Column {
+                        visible: backend.smartShiftEnabled
+                        width: parent.width
+                        spacing: 8
+
+                        Text {
+                            text: s["scroll.sensitivity_value"]
+                            font {
+                                family: uiState.fontFamily
+                                pixelSize: 11
+                                bold: true
+                                letterSpacing: 0.8
+                            }
+                            color: scrollPage.theme.textDim
+                        }
+
+                        RowLayout {
+                            width: parent.width
+                            spacing: 8
+
+                            Text {
+                                text: "1"
+                                font { family: uiState.fontFamily; pixelSize: 11 }
+                                color: scrollPage.theme.textDim
+                            }
+
+                            Slider {
+                                id: smartShiftSlider
+                                Layout.fillWidth: true
+                                from: 1
+                                to: 50
+                                stepSize: 1
+                                value: backend.smartShiftThreshold
+                                Material.accent: scrollPage.theme.accent
+                                Accessible.name: "SmartShift sensitivity"
+
+                                onMoved: {
+                                    smartShiftLabel.text = Math.round(value * 2) + "%"
+                                    smartShiftDebounce.restart()
+                                }
+                            }
+
+                            Text {
+                                text: "50"
+                                font { family: uiState.fontFamily; pixelSize: 11 }
+                                color: scrollPage.theme.textDim
+                            }
+
+                            Rectangle {
+                                Layout.preferredWidth: 72
+                                Layout.preferredHeight: 36
                                 radius: 10
-                                color: backend.smartShiftMode === modelData.value
-                                       ? scrollPage.theme.accentDim
-                                       : scrollPage.theme.bgSubtle
-                                border.width: backend.smartShiftMode === modelData.value ? 2 : 1
-                                border.color: backend.smartShiftMode === modelData.value
-                                              ? scrollPage.theme.accent
-                                              : scrollPage.theme.border
+                                color: scrollPage.theme.accentDim
 
                                 Text {
-                                    id: ssText
+                                    id: smartShiftLabel
                                     anchors.centerIn: parent
-                                    text: s[modelData.labelKey] || modelData.labelKey
+                                    text: Math.round(backend.smartShiftThreshold * 2) + "%"
                                     font {
                                         family: uiState.fontFamily
-                                        pixelSize: 12
-                                        bold: backend.smartShiftMode === modelData.value
+                                        pixelSize: 14
+                                        bold: true
                                     }
-                                    color: backend.smartShiftMode === modelData.value
-                                           ? scrollPage.theme.accent
-                                           : scrollPage.theme.textPrimary
+                                    color: scrollPage.theme.accent
                                 }
+                            }
+                        }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: backend.setSmartShift(modelData.value)
+                        Timer {
+                            id: smartShiftDebounce
+                            interval: 400
+                            onTriggered: backend.setSmartShiftThreshold(Math.round(smartShiftSlider.value))
+                        }
+                    }
+
+                    // ── Scroll Mode (hidden when SmartShift ON) ─────────
+                    Column {
+                        visible: !backend.smartShiftEnabled
+                        width: parent.width
+                        spacing: 8
+
+                        Text {
+                            text: s["scroll.scroll_mode_section"]
+                            font {
+                                family: uiState.fontFamily
+                                pixelSize: 11
+                                bold: true
+                                letterSpacing: 0.8
+                            }
+                            color: scrollPage.theme.textDim
+                        }
+
+                        Row {
+                            width: parent.width
+                            spacing: 10
+
+                            Repeater {
+                                model: [
+                                    { value: "ratchet",  labelKey: "scroll.ratchet"  },
+                                    { value: "freespin", labelKey: "scroll.freespin" }
+                                ]
+
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    width: Math.max(96, ssText.implicitWidth + 28)
+                                    height: 38
+                                    radius: 10
+                                    color: backend.smartShiftMode === modelData.value
+                                           ? scrollPage.theme.accentDim
+                                           : scrollPage.theme.bgSubtle
+                                    border.width: backend.smartShiftMode === modelData.value ? 2 : 1
+                                    border.color: backend.smartShiftMode === modelData.value
+                                                  ? scrollPage.theme.accent
+                                                  : scrollPage.theme.border
+
+                                    Text {
+                                        id: ssText
+                                        anchors.centerIn: parent
+                                        text: s[modelData.labelKey] || modelData.labelKey
+                                        font {
+                                            family: uiState.fontFamily
+                                            pixelSize: 12
+                                            bold: backend.smartShiftMode === modelData.value
+                                        }
+                                        color: backend.smartShiftMode === modelData.value
+                                               ? scrollPage.theme.accent
+                                               : scrollPage.theme.textPrimary
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: backend.setSmartShift(modelData.value)
+                                    }
                                 }
                             }
                         }

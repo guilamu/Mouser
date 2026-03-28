@@ -65,7 +65,7 @@ BUTTON_TO_EVENTS = {
 }
 
 DEFAULT_CONFIG = {
-    "version": 6,
+    "version": 8,
     "active_profile": "default",
     "profiles": {
         "default": {
@@ -82,7 +82,7 @@ DEFAULT_CONFIG = {
                 "xbutton2": "alt_tab",
                 "hscroll_left": "browser_back",
                 "hscroll_right": "browser_forward",
-                "mode_shift": "none",
+                "mode_shift": "switch_scroll_mode",
             },
         }
     },
@@ -94,6 +94,8 @@ DEFAULT_CONFIG = {
         "invert_vscroll": False,  # swap vertical scroll directions
         "dpi": 1000,              # pointer speed / DPI setting
         "smart_shift_mode": "ratchet",
+        "smart_shift_enabled": False,
+        "smart_shift_threshold": 25,
         "gesture_threshold": 50,
         "gesture_deadzone": 40,
         "gesture_timeout_ms": 3000,
@@ -295,6 +297,27 @@ def _migrate(cfg):
             mappings = pdata.setdefault("mappings", {})
             mappings.setdefault("mode_shift", "none")
         cfg["version"] = 6
+
+    if version < 7:
+        # v6 defaulted mode_shift to "none"; remap to "toggle_smart_shift" so the
+        # physical SmartShift button behind the scroll wheel works out of the box.
+        # Users who explicitly want no action can set it back to "none" in the UI.
+        for pdata in cfg.get("profiles", {}).values():
+            mappings = pdata.setdefault("mappings", {})
+            if mappings.get("mode_shift") == "none":
+                mappings["mode_shift"] = "toggle_smart_shift"
+        cfg["version"] = 7
+
+    if version < 8:
+        # v7 defaulted mode_shift to "toggle_smart_shift" (SmartShift on/off toggle).
+        # The better default matches Logi Options+: switch ratchet ↔ free-spin.
+        # Upgrade "toggle_smart_shift" → "switch_scroll_mode" for all profiles.
+        # Users who prefer the old toggle can reassign it in the UI.
+        for pdata in cfg.get("profiles", {}).values():
+            mappings = pdata.setdefault("mappings", {})
+            if mappings.get("mode_shift") == "toggle_smart_shift":
+                mappings["mode_shift"] = "switch_scroll_mode"
+        cfg["version"] = 8
 
     cfg.setdefault("settings", {})
     cfg["settings"].setdefault("appearance_mode", "system")
