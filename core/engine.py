@@ -7,7 +7,10 @@ Supports per-application auto-switching of profiles.
 import threading
 import time
 from core.mouse_hook import MouseHook, MouseEvent
-from core.key_simulator import ACTIONS, execute_action
+from core.key_simulator import (
+    ACTIONS, execute_action, is_mouse_button_action,
+    inject_mouse_down, inject_mouse_up,
+)
 from core.config import (
     load_config, get_active_mappings, get_profile_for_app,
     BUTTON_TO_EVENTS, GESTURE_DIRECTION_BUTTONS, save_config,
@@ -96,6 +99,8 @@ class Engine:
                 if evt_type.endswith("_up"):
                     if action_id != "none":
                         self.hook.block(evt_type)
+                        if is_mouse_button_action(action_id):
+                            self.hook.register(evt_type, self._make_mouse_up_handler(action_id))
                     continue
 
                 if action_id != "none":
@@ -103,6 +108,8 @@ class Engine:
 
                     if "hscroll" in evt_type:
                         self.hook.register(evt_type, self._make_hscroll_handler(action_id))
+                    elif is_mouse_button_action(action_id):
+                        self.hook.register(evt_type, self._make_mouse_down_handler(action_id))
                     else:
                         self.hook.register(evt_type, self._make_handler(action_id))
 
@@ -126,6 +133,24 @@ class Engine:
                     self._switch_scroll_mode()
                 else:
                     execute_action(action_id)
+        return handler
+
+    def _make_mouse_down_handler(self, action_id):
+        def handler(event):
+            if self._enabled:
+                self._emit_debug(
+                    f"Mapped {event.event_type} -> {action_id} (mouse down)"
+                )
+                inject_mouse_down(action_id)
+        return handler
+
+    def _make_mouse_up_handler(self, action_id):
+        def handler(event):
+            if self._enabled:
+                self._emit_debug(
+                    f"Mapped {event.event_type} -> {action_id} (mouse up)"
+                )
+                inject_mouse_up(action_id)
         return handler
 
     def _toggle_smart_shift(self):
